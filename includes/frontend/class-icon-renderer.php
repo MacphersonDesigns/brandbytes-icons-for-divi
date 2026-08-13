@@ -62,7 +62,7 @@ class Icon_Renderer {
         }
         return preg_replace(
             '/<li([^>]*class="[^"]*\bet_pb_icon_list_item\b[^"]*"[^>]*)>/',
-            '<li$1><span class="et-pb-icon" data-icon="' . esc_attr($entity) . '">' . esc_html($entity) . '</span>',
+            '<li$1><span class="et-pb-icon" data-icon="' . esc_attr($entity) . '">' . $entity . '</span>',
             $block_content,
             1
         );
