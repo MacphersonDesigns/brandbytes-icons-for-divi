@@ -21,7 +21,12 @@ class Icon_Picker_Injector {
     }
 
     public function enqueue_in_builder_iframe() {
-        $this->enqueue('cifd-icon-picker-vb', array(array('divi-vendor-wp-hooks', 'wp-hooks')));
+        // No hard script dependency on Divi/WP hooks handles here: icon-picker.js
+        // polls for window.vendor.wp.hooks / window.wp.hooks itself with a retry
+        // loop, and a missing or renamed dependency handle would silently break
+        // this enqueue entirely (WP_Dependencies drops the whole chain when any
+        // listed dependency isn't registered).
+        $this->enqueue('cifd-icon-picker-vb', array());
     }
 
     public function enqueue_in_top_level_ui() {
