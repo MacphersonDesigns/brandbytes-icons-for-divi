@@ -14,7 +14,7 @@ class Icon_Sanitizer {
     );
 
     private static $allowed_attrs = array(
-        'id', 'class', 'style', 'width', 'height', 'viewBox', 'xmlns',
+        'id', 'class', 'width', 'height', 'viewBox', 'xmlns',
         'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry',
         'd', 'points', 'fill', 'fill-rule', 'fill-opacity', 'stroke',
         'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'stroke-opacity',
@@ -22,6 +22,8 @@ class Icon_Sanitizer {
         'stop-opacity', 'gradientUnits', 'gradientTransform', 'preserveAspectRatio',
         'clip-path', 'mask', 'aria-hidden', 'role',
     );
+
+    private static $url_safe_attrs = array('fill', 'stroke', 'clip-path', 'mask');
 
     public function sanitize($svg_markup) {
         if (!is_string($svg_markup) || trim($svg_markup) === '') {
@@ -72,10 +74,22 @@ class Icon_Sanitizer {
             $attr_value = $attr->value;
 
             $is_event_handler = strpos($attr_name, 'on') === 0;
-            $is_script_uri = (bool) preg_match('/^\s*javascript:/i', $attr_value);
+
+            // Harden javascript: URI check by stripping control characters and whitespace
+            $stripped_value = preg_replace('/[\x00-\x1F\s]+/', '', $attr_value);
+            $is_script_uri = (bool) (stripos($stripped_value, 'javascript:') === 0);
+
             $is_allowed = in_array($attr_name, self::$allowed_attrs, true);
 
-            if ($is_event_handler || $is_script_uri || !$is_allowed) {
+            // Additional check for url() attributes - restrict to same-document fragments
+            $is_url_attr = in_array($attr_name, self::$url_safe_attrs, true);
+            $has_url_ref = stripos($attr_value, 'url(') !== false;
+            $is_url_safe = true;
+            if ($is_url_attr && $has_url_ref) {
+                $is_url_safe = (bool) preg_match('/^url\(#[^)]+\)$/i', trim($attr_value));
+            }
+
+            if ($is_event_handler || $is_script_uri || !$is_allowed || !$is_url_safe) {
                 $to_remove[] = $attr->name;
             }
         }

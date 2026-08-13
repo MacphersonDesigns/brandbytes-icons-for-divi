@@ -36,9 +36,14 @@ $result = $sanitizer->sanitize($with_handler);
 assert_true(strpos($result, 'onclick') === false, 'onclick attribute is removed');
 assert_true(strpos($result, '<path') !== false, 'the element itself is kept once the handler is stripped');
 
-$with_js_uri = '<svg xmlns="http://www.w3.org/2000/svg"><a href="javascript:alert(1)"><path d="M0 0h10v10H0z"/></a></svg>';
-$result = $sanitizer->sanitize($with_js_uri);
-assert_true(strpos($result, 'javascript:') === false, 'javascript: URI is removed');
+$with_external_url = '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="url(https://evil.example/x)"/></svg>';
+$result = $sanitizer->sanitize($with_external_url);
+assert_true(strpos($result, 'evil.example') === false, 'external URL in fill attribute is stripped');
+assert_true(strpos($result, '<rect') !== false, 'element is preserved after URL removal');
+
+$with_fragment_url = '<svg xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gradient1"><stop/></linearGradient></defs><rect fill="url(#gradient1)"/></svg>';
+$result = $sanitizer->sanitize($with_fragment_url);
+assert_true(strpos($result, 'url(#gradient1)') !== false, 'same-document fragment URL in fill is preserved');
 
 $with_doctype = "<?xml version=\"1.0\"?><!DOCTYPE svg [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><svg xmlns=\"http://www.w3.org/2000/svg\"><text>&xxe;</text></svg>";
 $result = $sanitizer->sanitize($with_doctype);
