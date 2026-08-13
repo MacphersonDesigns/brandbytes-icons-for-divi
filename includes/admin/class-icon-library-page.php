@@ -28,6 +28,21 @@ class Icon_Library_Page {
         add_action('wp_ajax_cifd_rename_icon', array($this, 'ajax_rename_icon'));
         add_action('wp_ajax_cifd_delete_icon', array($this, 'ajax_delete_icon'));
         add_action('wp_ajax_cifd_reorder_icons', array($this, 'ajax_reorder_icons'));
+        add_filter('upload_mimes', array($this, 'allow_svg_uploads'));
+    }
+
+    /**
+     * WordPress rejects image/svg+xml uploads by default. This plugin's
+     * primary supported icon format is SVG, and Icon_Sanitizer strips any
+     * dangerous content from the uploaded file before it's ever used, so
+     * allowing the raw upload through WordPress's mime gate here is safe.
+     * Gated to the same capability as the rest of this plugin's write surface.
+     */
+    public function allow_svg_uploads($mimes) {
+        if (current_user_can(self::CAPABILITY)) {
+            $mimes['svg'] = 'image/svg+xml';
+        }
+        return $mimes;
     }
 
     public function register_page() {
@@ -114,7 +129,14 @@ class Icon_Library_Page {
             if (!is_string($sanitized)) {
                 wp_send_json_error(array('message' => __('That SVG could not be safely sanitized and was rejected.', 'custom-icons-for-divi')), 400);
             }
-            file_put_contents($file, $sanitized);
+            $written = file_put_contents($file, $sanitized);
+            if ($written === false) {
+                // Do not proceed: on write failure, $file on disk still holds
+                // the original, unsanitized SVG from before this overwrite
+                // attempt. Registering the icon here would silently void the
+                // sanitizer's guarantee and serve the raw upload instead.
+                wp_send_json_error(array('message' => __('The sanitized SVG could not be saved to disk. Check file permissions and try again.', 'custom-icons-for-divi')), 500);
+            }
         }
 
         $id = $this->registry->add($name, $url, $mime);
