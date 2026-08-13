@@ -68,10 +68,24 @@ class Icon_Renderer {
         );
     }
 
-    public function render_button($block_content) {
+    public function render_button($block_content, $parsed_block) {
         if (!is_string($block_content) || strpos($block_content, 'et_pb_button') === false) {
             return $block_content;
         }
+
+        // render_button is registered on the global, unscoped `render_block`
+        // filter (unlike the other render_* methods, which are scoped to a
+        // single block name), so it also fires for ancestor container blocks
+        // (row/column/section) *after* all their children have rendered. For
+        // those, $block_content is the concatenated HTML of every descendant
+        // block, not just one button. Skip any block that has innerBlocks —
+        // i.e. any container — so this only ever runs against the actual leaf
+        // block that produced the button markup, not a container holding
+        // multiple buttons where only some have a custom icon assigned.
+        if (!empty($parsed_block['innerBlocks'])) {
+            return $block_content;
+        }
+
         $entity = $this->find_custom_entity_in_content($block_content);
         if (!$entity) {
             return $block_content;
