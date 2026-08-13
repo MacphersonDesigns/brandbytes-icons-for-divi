@@ -1,0 +1,35 @@
+.cifd-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cifd-icon-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.cifd-icon-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.cifd-icon-name {
+    width: 100%;
+    text-align: center;
+}
+
+.cifd-icon-grid-empty {
+    color: #646970;
+    font-style: italic;
+}
