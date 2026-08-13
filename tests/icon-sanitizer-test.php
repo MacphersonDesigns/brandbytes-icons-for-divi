@@ -53,5 +53,12 @@ $not_svg = '<div>not an svg</div>';
 $result = $sanitizer->sanitize($not_svg);
 assert_true(is_object($result), 'a non-SVG root element is rejected as an error');
 
+$with_xlink_href = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="javascript:alert(1)"><path d="M0 0h10v10H0z"/></a></svg>';
+$result = $sanitizer->sanitize($with_xlink_href);
+assert_true(is_string($result), 'an SVG with a namespaced xlink:href sanitizes to a string');
+assert_true(strpos($result, 'xlink:href') === false, 'namespaced xlink:href attribute is removed, not left behind via a local-name mismatch');
+assert_true(strpos($result, 'javascript:') === false, 'the javascript: URI carried by xlink:href is gone from the output');
+assert_true(strpos($result, '<path') !== false, 'the inner <path> element survives sanitization');
+
 echo "\n$passed passed, $failures failed\n";
 exit($failures > 0 ? 1 : 0);

@@ -70,7 +70,12 @@ class Icon_Sanitizer {
 
         $to_remove = array();
         foreach ($node->attributes as $attr) {
-            $attr_name = strtolower($attr->name);
+            // Use the qualified name (e.g. "xlink:href"), not $attr->name which
+            // returns only the local part ("href") for namespaced attributes.
+            // Matching on the local name would let namespaced attributes bypass
+            // both the allowlist check and removeAttribute() (which matches by
+            // qualified name), silently leaving dangerous attributes in place.
+            $attr_name = strtolower($attr->nodeName);
             $attr_value = $attr->value;
 
             $is_event_handler = strpos($attr_name, 'on') === 0;
@@ -90,11 +95,14 @@ class Icon_Sanitizer {
             }
 
             if ($is_event_handler || $is_script_uri || !$is_allowed || !$is_url_safe) {
-                $to_remove[] = $attr->name;
+                $to_remove[] = $attr;
             }
         }
-        foreach ($to_remove as $name) {
-            $node->removeAttribute($name);
+        foreach ($to_remove as $attr) {
+            // removeAttributeNode() matches by node identity (namespace-agnostic),
+            // unlike removeAttribute() which matches by qualified name and is a
+            // no-op when passed only the local part of a namespaced attribute.
+            $node->removeAttributeNode($attr);
         }
 
         $children = array();
