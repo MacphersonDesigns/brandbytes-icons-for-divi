@@ -146,7 +146,13 @@
                         var $cards = $grid.find('.cifd-icon-card');
                         var currentIndex = $cards.index($item);
                         var $next = $cards.eq(currentIndex + 1);
-                        var $prev = $cards.eq(currentIndex - 1);
+                        // Guard the negative-index case explicitly: jQuery's
+                        // .eq(-1) counts backward from the end of the set,
+                        // so when currentIndex is 0 (deleting the sole
+                        // remaining card), .eq(-1) would wrap around and
+                        // resolve back to $item itself instead of "no
+                        // previous card".
+                        var $prev = currentIndex > 0 ? $cards.eq(currentIndex - 1) : $();
                         var $focusTarget;
                         if ($next.length) {
                             $focusTarget = $next.find('.cifd-icon-delete');
