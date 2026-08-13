@@ -76,10 +76,11 @@ class Icon_Library_Page {
                 <?php esc_html_e('Add Icon', 'custom-icons-for-divi'); ?>
             </button>
 
-            <ul id="cifd-icon-grid" class="cifd-icon-grid" aria-live="polite"></ul>
+            <ul id="cifd-icon-grid" class="cifd-icon-grid"></ul>
             <p id="cifd-icon-grid-empty" class="cifd-icon-grid-empty" hidden>
                 <?php esc_html_e('No custom icons yet. Click "Add Icon" to upload one.', 'custom-icons-for-divi'); ?>
             </p>
+            <div id="cifd-icon-status" class="screen-reader-text" role="status" aria-live="polite"></div>
         </div>
         <?php
     }

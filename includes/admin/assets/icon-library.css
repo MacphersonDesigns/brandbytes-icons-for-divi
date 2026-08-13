@@ -29,6 +29,17 @@
     text-align: center;
 }
 
+.cifd-icon-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cifd-icon-move[disabled] {
+    opacity: 0.4;
+    cursor: default;
+}
+
 .cifd-icon-grid-empty {
     color: #646970;
     font-style: italic;
