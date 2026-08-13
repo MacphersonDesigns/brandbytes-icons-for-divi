@@ -1,1 +1,8 @@
 /.superpowers/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+/vendor/
+/node_modules/
+*.log
