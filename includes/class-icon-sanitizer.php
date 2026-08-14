@@ -61,7 +61,11 @@ class Icon_Sanitizer {
     }
 
     private function clean_node(\DOMElement $node) {
-        $tag = strtolower($node->tagName);
+        // SVG/XML element and attribute names are case-sensitive by spec, and
+        // self::$allowed_tags / self::$allowed_attrs intentionally preserve
+        // the SVG-spec-correct mixed case (e.g. "clipPath", "viewBox"). Do not
+        // lowercase before comparing against those allowlists.
+        $tag = $node->tagName;
 
         if (!in_array($tag, self::$allowed_tags, true)) {
             $node->parentNode->removeChild($node);
@@ -75,10 +79,14 @@ class Icon_Sanitizer {
             // Matching on the local name would let namespaced attributes bypass
             // both the allowlist check and removeAttribute() (which matches by
             // qualified name), silently leaving dangerous attributes in place.
-            $attr_name = strtolower($attr->nodeName);
+            // Keep the exact case for allowlist comparisons (SVG attribute
+            // names like "viewBox" are case-sensitive); a separate lowercase
+            // copy is used only for the case-insensitive event-handler check.
+            $attr_name = $attr->nodeName;
+            $attr_name_lower = strtolower($attr_name);
             $attr_value = $attr->value;
 
-            $is_event_handler = strpos($attr_name, 'on') === 0;
+            $is_event_handler = strpos($attr_name_lower, 'on') === 0;
 
             // Harden javascript: URI check by stripping control characters and whitespace
             $stripped_value = preg_replace('/[\x00-\x1F\s]+/', '', $attr_value);

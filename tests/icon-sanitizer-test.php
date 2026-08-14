@@ -60,5 +60,12 @@ assert_true(strpos($result, 'xlink:href') === false, 'namespaced xlink:href attr
 assert_true(strpos($result, 'javascript:') === false, 'the javascript: URI carried by xlink:href is gone from the output');
 assert_true(strpos($result, '<path') !== false, 'the inner <path> element survives sanitization');
 
+$with_mixed_case_gradient = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><defs><linearGradient id="gradient1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient></defs><path d="M0 0h24v24H0z" fill="url(#gradient1)"/></svg>';
+$result = $sanitizer->sanitize($with_mixed_case_gradient);
+assert_true(is_string($result), 'an SVG with a mixed-case <linearGradient> sanitizes to a string');
+assert_true(strpos($result, '<linearGradient') !== false, 'mixed-case <linearGradient> element survives sanitization with its case intact');
+assert_true(strpos($result, 'viewBox=') !== false, 'mixed-case viewBox attribute on the root <svg> survives sanitization with its case intact');
+assert_true(strpos($result, '<stop') !== false, "the gradient's <stop> child element survives sanitization");
+
 echo "\n$passed passed, $failures failed\n";
 exit($failures > 0 ? 1 : 0);
