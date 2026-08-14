@@ -81,26 +81,37 @@ class Icon_Renderer {
         // block, not just one button. Skip any block that has innerBlocks —
         // i.e. any container — so this only ever runs against the actual leaf
         // block that produced the button markup, not a container holding
-        // multiple buttons where only some have a custom icon assigned.
+        // multiple buttons where only some have a custom icon assigned. As a
+        // second layer of defense, entities are also assigned positionally
+        // (document order) below, so even if a single leaf block's content
+        // ever contained more than one button, each icon is correlated with
+        // the button it actually appeared alongside rather than every button
+        // grabbing the registry's first match.
         if (!empty($parsed_block['innerBlocks'])) {
             return $block_content;
         }
 
-        $entity = $this->find_custom_entity_in_content($block_content);
-        if (!$entity) {
+        $entities = $this->find_all_custom_entities_in_order($block_content);
+        if (empty($entities)) {
             return $block_content;
         }
+
+        $index = 0;
         return preg_replace_callback(
             '/<a([^>]*class="[^"]*\bet_pb_button\b[^"]*"[^>]*)>/i',
-            function ($matches) use ($entity) {
+            function ($matches) use ($entities, &$index) {
                 $tag = '<a' . $matches[1] . '>';
                 if (strpos($tag, 'data-icon=') !== false) {
                     return $tag;
                 }
+                if (!isset($entities[$index])) {
+                    return $tag;
+                }
+                $entity = $entities[$index];
+                $index++;
                 return rtrim($tag, '>') . ' data-icon="' . esc_attr($entity) . '">';
             },
-            $block_content,
-            1
+            $block_content
         );
     }
 
@@ -135,6 +146,31 @@ class Icon_Renderer {
             }
         }
         return null;
+    }
+
+    private function find_all_custom_entities_in_order($content) {
+        $known = array();
+        foreach ($this->registry->all() as $icon) {
+            $entity = $this->registry->codepoint_entity_for($icon['id']);
+            $decoded = html_entity_decode($entity, ENT_QUOTES, 'UTF-8');
+            $known[$entity] = $entity;
+            $known[$decoded] = $entity;
+        }
+        if (empty($known)) {
+            return array();
+        }
+
+        $pattern = '/' . implode('|', array_map(function ($k) {
+            return preg_quote($k, '/');
+        }, array_keys($known))) . '/';
+
+        if (!preg_match_all($pattern, $content, $matches)) {
+            return array();
+        }
+
+        return array_map(function ($match) use ($known) {
+            return $known[$match];
+        }, $matches[0]);
     }
 
     public function output_swap_css() {
