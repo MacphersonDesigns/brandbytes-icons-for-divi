@@ -81,12 +81,25 @@ class Icon_Renderer {
         // block, not just one button. Skip any block that has innerBlocks —
         // i.e. any container — so this only ever runs against the actual leaf
         // block that produced the button markup, not a container holding
-        // multiple buttons where only some have a custom icon assigned. As a
-        // second layer of defense, entities are also assigned positionally
-        // (document order) below, so even if a single leaf block's content
-        // ever contained more than one button, each icon is correlated with
-        // the button it actually appeared alongside rather than every button
-        // grabbing the registry's first match.
+        // multiple buttons where only some have a custom icon assigned.
+        //
+        // As a second layer of defense, entities are also assigned below by
+        // sequential position: every known icon entity found in the content
+        // is collected in document order, and every et_pb_button tag lacking
+        // data-icon consumes the next entity in that list as it's walked in
+        // document order. This is plain index-based consumption, not
+        // proximity/adjacency matching — it does not verify an entity is
+        // actually near the button it gets assigned to. Known limitation: a
+        // block mixing icon and non-icon buttons (e.g. button 1 wants no
+        // icon, button 2 wants icon A) is handled incorrectly, because
+        // button 1 has no way to know it wasn't supposed to consume an
+        // entity and will consume A first, leaving button 2 with nothing.
+        // This whole code path — a single leaf block's rendered content
+        // containing more than one button — is believed unreachable in
+        // native Divi 5 today (a button is always its own leaf block), so
+        // this is defense against a currently-hypothetical future
+        // architecture change, with the above limitation accepted as-is
+        // rather than solved with a more complex proximity-based algorithm.
         if (!empty($parsed_block['innerBlocks'])) {
             return $block_content;
         }
