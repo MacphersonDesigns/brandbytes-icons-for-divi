@@ -52,16 +52,25 @@ function make_registry(&$store) {
 
 // find_all_custom_entities_in_order() is private; reach it via reflection
 // the same way the class itself would call it internally.
+// setAccessible() is required to invoke a private method on the plugin's
+// minimum supported PHP version (7.4). PHP 8.1+ can invoke private methods
+// via reflection without it, and PHP 8.5 deprecates the call as a no-op, so
+// it's only made on versions that actually need it.
+function reflect_private_method($class, $method_name) {
+    $method = new ReflectionMethod($class, $method_name);
+    if (PHP_VERSION_ID < 80100) {
+        $method->setAccessible(true);
+    }
+    return $method;
+}
+
 function call_find_all_in_order(Icon_Renderer $renderer, $content) {
-    // Reflection can invoke a private method directly without
-    // setAccessible() since PHP 8.1 (and setAccessible() is a deprecated
-    // no-op as of PHP 8.5).
-    $method = new ReflectionMethod(Icon_Renderer::class, 'find_all_custom_entities_in_order');
+    $method = reflect_private_method(Icon_Renderer::class, 'find_all_custom_entities_in_order');
     return $method->invoke($renderer, $content);
 }
 
 function call_find_custom_blurb_uuid(Icon_Renderer $renderer, $parsed_block) {
-    $method = new ReflectionMethod(Icon_Renderer::class, 'find_custom_blurb_uuid');
+    $method = reflect_private_method(Icon_Renderer::class, 'find_custom_blurb_uuid');
     return $method->invoke($renderer, $parsed_block);
 }
 
