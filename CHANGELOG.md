@@ -10,6 +10,18 @@ All notable changes to this project will be documented in this file.
 - Identified raw SVG publication before sanitization as the remaining security
   release blocker; no critical vulnerabilities or committed secrets were found.
 
+## 0.4.9 - 2026-08-30
+
+- Added a GitHub-based update path (`includes/class-updater.php`) using
+  Plugin Update Checker, reading built release assets from GitHub Releases so
+  sites get native in-dashboard update notices ahead of a WordPress.org
+  directory submission.
+- Added `.github/workflows/release.yml`: pushing a `v*.*.*` tag verifies the
+  tag matches `package.json`, the plugin header, and `readme.txt`, builds the
+  release zip, and publishes it as a GitHub Release.
+- Added `bin/bump-version.sh` (`npm run bump <version>`) to keep those three
+  version locations in sync.
+
 ## 0.4.8 - 2026-08-30
 
 - Added a dedicated SVG upload policy that sanitizes PHP's private temporary

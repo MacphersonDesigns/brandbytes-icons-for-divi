@@ -4,7 +4,7 @@ Tags: divi, icons, svg, icon library, divi builder
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.8
+Stable tag: 0.4.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,6 +88,11 @@ On the [GitHub repository](https://github.com/MacphersonDesigns/brandbytes-icons
 2. The icon-library admin screen.
 
 == Changelog ==
+
+= 0.4.9 =
+* Added a GitHub-based update path: sites now get an in-dashboard update
+  notice and one-click update sourced from GitHub Releases, ahead of a
+  WordPress.org directory submission.
 
 = 0.4.8 =
 * Sanitize SVGs in PHP's private upload temp file before WordPress can

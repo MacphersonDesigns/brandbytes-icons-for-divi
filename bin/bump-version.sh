@@ -39,7 +39,7 @@ update_or_fail() {
 }
 
 update_or_fail "$PACKAGE_JSON" '"version": "[0-9]+\.[0-9]+\.[0-9]+"' "\"version\": \"$NEW_VERSION\"" '"version"'
-update_or_fail "$PLUGIN_FILE" '\* Version:[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+' " * Version: $NEW_VERSION" 'Version: header'
+update_or_fail "$PLUGIN_FILE" '^ \* Version:[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+' " * Version: $NEW_VERSION" 'Version: header'
 update_or_fail "$README_FILE" 'Stable tag: [0-9]+\.[0-9]+\.[0-9]+' "Stable tag: $NEW_VERSION" 'Stable tag:'
 
 echo "Bumped version to $NEW_VERSION in:"

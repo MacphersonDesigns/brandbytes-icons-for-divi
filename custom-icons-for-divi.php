@@ -3,7 +3,7 @@
  * Plugin Name: BrandBytes Icons for Divi
  * Plugin URI: https://github.com/MacphersonDesigns/brandbytes-icons-for-divi
  * Description: Manage reusable custom icon libraries for Divi 5.
- * Version: 0.4.8
+ * Version: 0.4.9
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author: Code & Canvas
