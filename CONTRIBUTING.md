@@ -28,6 +28,32 @@ npm test
 Green currently means all PHP smoke assertions pass, all Jest metadata tests
 pass, Webpack produces `assets/divi5/`, and PHP lint reports no syntax errors.
 
+## Releasing
+
+The plugin version number is duplicated in `package.json`, the `Version:`
+header in `custom-icons-for-divi.php`, and the `Stable tag:` line in
+`readme.txt`. Never hand-edit these. Always bump via:
+
+```bash
+npm run bump 0.4.9
+```
+
+Then update the `readme.txt` Changelog and `CHANGELOG.md`, commit, tag, and
+push:
+
+```bash
+git commit -am "Release 0.4.9"
+git tag v0.4.9
+git push --tags
+```
+
+Pushing the tag triggers `.github/workflows/release.yml`, which verifies all
+three version locations match the tag, builds the release ZIP via
+`bin/build-release-zip.sh`, and publishes it as a GitHub Release. Sites
+running the plugin see the update via the in-dashboard update checker
+(`includes/class-updater.php`), which reads GitHub Releases directly — no
+WordPress.org submission required for this to work.
+
 ## Pull requests
 
 Keep pull requests small enough to verify independently. Include:

@@ -1,0 +1,66 @@
+name: Build and publish plugin release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Verify tag, package.json, plugin header, and readme.txt versions match
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          plugin_version="$(sed -n 's/^ \* Version:[[:space:]]*//p' custom-icons-for-divi.php | head -n 1)"
+          readme_version="$(sed -n 's/^Stable tag:[[:space:]]*//p' readme.txt | head -n 1)"
+
+          echo "tag=$tag_version package.json=$package_version plugin header=$plugin_version readme.txt=$readme_version"
+
+          if [[ "$tag_version" != "$package_version" || "$tag_version" != "$plugin_version" || "$tag_version" != "$readme_version" ]]; then
+            echo "::error::Version mismatch. Run 'npm run bump $tag_version' and commit before tagging." >&2
+            exit 1
+          fi
+
+      - name: Build release ZIP (runs composer test, npm test, npm run build)
+        run: bash bin/build-release-zip.sh
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "${GITHUB_REF_NAME}" \
+            "build/custom-icons-for-divi-${version}.zip" \
+            --title "BrandBytes Icons for Divi ${GITHUB_REF_NAME}" \
+            --generate-notes

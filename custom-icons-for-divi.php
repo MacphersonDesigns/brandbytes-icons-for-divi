@@ -1,11 +1,15 @@
 <?php
 /**
  * Plugin Name: BrandBytes Icons for Divi
+ * Plugin URI: https://github.com/MacphersonDesigns/brandbytes-icons-for-divi
  * Description: Manage reusable custom icon libraries for Divi 5.
  * Version: 0.4.8
+ * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author: Code & Canvas
+ * Author URI: https://github.com/MacphersonDesigns
  * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: custom-icons-for-divi
  */
 
@@ -24,6 +28,11 @@ define('CIFD_OPTION_NEXT_ID', 'cifd_next_id');
 define('CIFD_CODEPOINT_BASE', 0xE000);
 define('CIFD_OPTION_EXPERIMENTAL_CUSTOM_ICON_MODULE', 'cifd_enable_experimental_custom_icon_module');
 
+if (file_exists(CIFD_DIR . 'vendor/autoload.php')) {
+    require_once CIFD_DIR . 'vendor/autoload.php';
+}
+
+require_once CIFD_DIR . 'includes/class-updater.php';
 require_once CIFD_DIR . 'includes/class-icon-registry.php';
 require_once CIFD_DIR . 'includes/class-bundled-icon-library.php';
 require_once CIFD_DIR . 'includes/class-icon-catalog.php';
@@ -33,6 +42,8 @@ require_once CIFD_DIR . 'includes/admin/class-icon-library-page.php';
 require_once CIFD_DIR . 'includes/divi5/class-custom-icon-module-bootstrap.php';
 
 function bootstrap() {
+    (new Updater())->init();
+
     $registry = new Icon_Registry(CIFD_OPTION_ICONS, CIFD_OPTION_NEXT_ID, CIFD_CODEPOINT_BASE);
     $essentials = new Bundled_Icon_Library(
         CIFD_DIR . 'assets/icon-libraries/essentials/manifest.json',

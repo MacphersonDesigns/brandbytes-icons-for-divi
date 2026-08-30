@@ -12,7 +12,8 @@
     "start": "NODE_ENV=development webpack --watch --config webpack.config.js",
     "test": "npm run test:js",
     "test:js": "jest --runInBand",
-    "release:zip": "bash bin/build-release-zip.sh"
+    "release:zip": "bash bin/build-release-zip.sh",
+    "bump": "bash bin/bump-version.sh"
   },
   "devDependencies": {
     "@divi/types": "npm:divi-types@^1.0.10",
