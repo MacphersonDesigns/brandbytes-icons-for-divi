@@ -30,8 +30,95 @@ class Icon_Renderer {
         return $this->inject_data_icon($block_content, '/<span([^>]*class="[^"]*\bet_pb_icon_wrap\b[^"]*"[^>]*)>(.*?)<\/span>/is');
     }
 
-    public function render_blurb($block_content) {
+    public function render_blurb($block_content, $parsed_block = array()) {
+        $custom_uuid = $this->find_custom_blurb_uuid($parsed_block);
+        if ($custom_uuid) {
+            $custom_markup = $this->render_custom_blurb_icon($block_content, $custom_uuid);
+            if ($custom_markup !== null) {
+                return $custom_markup;
+            }
+        }
+
         return $this->inject_data_icon($block_content, '/<span([^>]*class="[^"]*\bet-pb-icon\b[^"]*"[^>]*)>(.*?)<\/span>/is');
+    }
+
+    /**
+     * Read Blurb's saved icon reference before Divi's fixed font catalog can
+     * discard it. This keeps the adapter tied to the documented metadata path
+     * instead of guessing from rendered HTML.
+     */
+    private function find_custom_blurb_uuid($parsed_block) {
+        $icon = $parsed_block['attrs']['imageIcon']['innerContent']['desktop']['value']['icon'] ?? null;
+        if (!is_array($icon) || ($icon['type'] ?? '') !== 'cifd') {
+            return '';
+        }
+
+        $uuid = $icon['uuid'] ?? '';
+        return is_string($uuid) ? $uuid : '';
+    }
+
+    /**
+     * Replace only Blurb's icon span with a currentColor mask. Divi continues
+     * to generate the surrounding module and design styles; this adapter owns
+     * only the glyph that Divi's font renderer cannot understand.
+     */
+    private function render_custom_blurb_icon($block_content, $uuid) {
+        if (!is_string($block_content) || !defined('CIFD_DIR')) {
+            return null;
+        }
+
+        require_once CIFD_DIR . 'includes/divi5/class-custom-icon-asset-resolver.php';
+        $resolver = new \CustomIconsForDivi\Divi5\Custom_Icon_Asset_Resolver($this->registry);
+        $asset = $resolver->resolve($uuid);
+        if (!$asset) {
+            return null;
+        }
+
+        $style = '--cifd-icon-url: url("' . esc_url($asset['url']) . '");';
+        $replaced = preg_replace_callback(
+            '/<span([^>]*class="[^"]*\bet-pb-icon\b[^"]*"[^>]*)>(.*?)<\/span>/is',
+            function ($matches) use ($style, $uuid) {
+                $attributes = $matches[1];
+                if (strpos($attributes, 'cifd-custom-icon-glyph') === false) {
+                    $attributes = preg_replace(
+                        '/class="([^"]*)"/i',
+                        'class="$1 cifd-custom-icon-glyph"',
+                        $attributes,
+                        1
+                    );
+                }
+                $attributes = preg_replace('/\sstyle="[^"]*"/i', '', $attributes);
+                return '<span' . $attributes
+                    . ' data-cifd-icon-uuid="' . esc_attr($uuid) . '"'
+                    . ' style="' . esc_attr($style) . '" aria-hidden="true"></span>';
+            },
+            $block_content,
+            1
+        );
+
+        if ($replaced !== null && $replaced !== $block_content) {
+            return $replaced;
+        }
+
+        // Divi omits the entire image container when its fixed font resolver
+        // rejects the custom value. Recreate only that known Blurb wrapper so
+        // the module's existing placement, spacing, and design selectors work.
+        $glyph = '<div class="et_pb_main_blurb_image">'
+            . '<span class="et_pb_image_wrap">'
+            . '<span class="et-pb-icon cifd-custom-icon-glyph"'
+            . ' data-cifd-icon-uuid="' . esc_attr($uuid) . '"'
+            . ' style="' . esc_attr($style) . '" aria-hidden="true"></span>'
+            . '</span></div>';
+
+        $inserted = preg_replace(
+            '/(<div[^>]*class="[^"]*\bet_pb_blurb_content\b[^"]*"[^>]*>)/i',
+            '$1' . $glyph,
+            $block_content,
+            1,
+            $count
+        );
+
+        return $count > 0 && $inserted !== null ? $inserted : null;
     }
 
     public function render_toggle($block_content) {
@@ -194,6 +281,15 @@ class Icon_Renderer {
         <style>
             [data-icon].cifd-swapped { color: transparent !important; }
             [data-icon] img.cifd-icon-img { height: 1em; width: auto; display: inline-block; vertical-align: middle; }
+            .cifd-custom-icon-glyph {
+                background: currentColor;
+                display: inline-block;
+                height: 1em;
+                line-height: 1;
+                mask: var(--cifd-icon-url) center / contain no-repeat;
+                width: 1em;
+                -webkit-mask: var(--cifd-icon-url) center / contain no-repeat;
+            }
         </style>
         <?php
     }

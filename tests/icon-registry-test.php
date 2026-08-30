@@ -28,14 +28,23 @@ function make_registry(&$store) {
         $store[$name] = $value;
         return true;
     };
-    return new Icon_Registry('icons', 'next_id', 0xE000, $get, $update);
+    $uuid_counter = 0;
+    $generate_uuid = function () use (&$uuid_counter) {
+        $uuid_counter++;
+        return sprintf('00000000-0000-4000-8000-%012d', $uuid_counter);
+    };
+    return new Icon_Registry('icons', 'next_id', 0xE000, $get, $update, $generate_uuid);
 }
 
 $store = array();
 $registry = make_registry($store);
-$id = $registry->add('Handshake', 'https://example.com/handshake.svg', 'image/svg+xml');
+$id = $registry->add('Handshake', 'https://example.com/handshake.svg', 'image/svg+xml', 41);
 assert_true($id === 1, 'first icon gets id 1');
 assert_true(count($registry->all()) === 1, 'registry has one icon after add');
+$first_icon = $registry->find(1);
+assert_true($first_icon['uuid'] === '00000000-0000-4000-8000-000000000001', 'new icon receives a stable UUID');
+assert_true($first_icon['attachment_id'] === 41, 'new icon stores its WordPress attachment id');
+assert_true($registry->find_by_uuid($first_icon['uuid'])['id'] === 1, 'icon can be resolved by UUID');
 
 assert_true($registry->codepoint_for(1) === 0xE000 + 1, 'codepoint_for(1) is base + 1');
 assert_true($registry->codepoint_entity_for(1) === '&#x' . dechex(0xE000 + 1) . ';', 'codepoint_entity_for matches hex entity');
@@ -67,6 +76,28 @@ $registry2->add('B', 'https://example.com/b.svg', 'image/svg+xml');
 $registry2->reorder(array(2));
 $ids2 = array_map(function ($icon) { return $icon['id']; }, $registry2->all());
 assert_true($ids2 === array(2, 1), 'reorder with a partial id list appends the missing icon rather than dropping it');
+
+$legacy_store = array(
+    'icons' => array(
+        array(
+            'id' => 7,
+            'name' => 'Legacy',
+            'url' => 'https://example.com/legacy.svg',
+            'mime' => 'image/svg+xml',
+        ),
+    ),
+);
+$legacy_registry = make_registry($legacy_store);
+$migration_result = $legacy_registry->ensure_metadata(function ($url) {
+    return $url === 'https://example.com/legacy.svg' ? 77 : 0;
+});
+$legacy_icon = $legacy_registry->find(7);
+assert_true($migration_result === true, 'legacy metadata migration reports success');
+assert_true($legacy_icon['uuid'] === '00000000-0000-4000-8000-000000000001', 'legacy icon receives a stable UUID');
+assert_true($legacy_icon['attachment_id'] === 77, 'legacy URL is related back to its attachment');
+$legacy_snapshot = $legacy_store;
+$legacy_registry->ensure_metadata(function () { return 999; });
+assert_true($legacy_store === $legacy_snapshot, 'metadata migration is idempotent after the first successful update');
 
 echo "\n$passed passed, $failures failed\n";
 exit($failures > 0 ? 1 : 0);

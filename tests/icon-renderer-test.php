@@ -42,7 +42,12 @@ function make_registry(&$store) {
         $store[$name] = $value;
         return true;
     };
-    return new Icon_Registry('icons', 'next_id', 0xE000, $get, $update);
+    $uuid_counter = 0;
+    $generate_uuid = function () use (&$uuid_counter) {
+        $uuid_counter++;
+        return sprintf('00000000-0000-4000-8000-%012d', $uuid_counter);
+    };
+    return new Icon_Registry('icons', 'next_id', 0xE000, $get, $update, $generate_uuid);
 }
 
 // find_all_custom_entities_in_order() is private; reach it via reflection
@@ -55,13 +60,41 @@ function call_find_all_in_order(Icon_Renderer $renderer, $content) {
     return $method->invoke($renderer, $content);
 }
 
+function call_find_custom_blurb_uuid(Icon_Renderer $renderer, $parsed_block) {
+    $method = new ReflectionMethod(Icon_Renderer::class, 'find_custom_blurb_uuid');
+    return $method->invoke($renderer, $parsed_block);
+}
+
 $store = array();
 $registry = make_registry($store);
 $id_a = $registry->add('Icon A', 'https://example.com/a.svg', 'image/svg+xml');
 $id_b = $registry->add('Icon B', 'https://example.com/b.svg', 'image/svg+xml');
+$uuid_a = $registry->all()[0]['uuid'];
 $entity_a = $registry->codepoint_entity_for($id_a);
 $entity_b = $registry->codepoint_entity_for($id_b);
 $renderer = new Icon_Renderer($registry);
+
+$custom_blurb_block = array(
+    'attrs' => array(
+        'imageIcon' => array(
+            'innerContent' => array(
+                'desktop' => array(
+                    'value' => array(
+                        'icon' => array('type' => 'cifd', 'uuid' => $uuid_a),
+                    ),
+                ),
+            ),
+        ),
+    ),
+);
+assert_true(
+    call_find_custom_blurb_uuid($renderer, $custom_blurb_block) === $uuid_a,
+    'Blurb adapter reads the plugin UUID from imageIcon.innerContent.desktop.value.icon'
+);
+assert_true(
+    call_find_custom_blurb_uuid($renderer, array()) === '',
+    'Blurb adapter ignores blocks without a plugin-owned icon reference'
+);
 
 // (a) Two distinct icon entities appear in a specific order (B before A,
 // the opposite of registry/add order) -> returned in that same document

@@ -7,6 +7,18 @@ if (!defined('ABSPATH') && !defined('CIFD_TESTING')) {
 
 class Icon_Sanitizer {
 
+    /** One icon should remain small enough for predictable admin processing. */
+    const MAX_FILE_BYTES = 1048576;
+
+    /** Prevent valid XML from becoming an excessive DOM tree. */
+    const MAX_ELEMENT_COUNT = 5000;
+
+    /** Bound recursion before clean_node() walks the accepted tree. */
+    const MAX_NESTING_DEPTH = 64;
+
+    /** Path and transform attributes can otherwise hide huge parsing workloads. */
+    const MAX_ATTRIBUTE_BYTES = 100000;
+
     private static $allowed_tags = array(
         'svg', 'g', 'path', 'circle', 'ellipse', 'line', 'polygon', 'polyline',
         'rect', 'text', 'tspan', 'defs', 'clipPath', 'linearGradient',
@@ -28,6 +40,12 @@ class Icon_Sanitizer {
     public function sanitize($svg_markup) {
         if (!is_string($svg_markup) || trim($svg_markup) === '') {
             return $this->error('empty SVG file.');
+        }
+
+        // Check raw bytes before XML parsing allocates a DOM tree. This is the
+        // first and cheapest protection against oversized or accidental files.
+        if (strlen($svg_markup) > self::MAX_FILE_BYTES) {
+            return $this->error('SVG file exceeds the 1 MB safety limit.');
         }
 
         if (preg_match('/<!DOCTYPE|<!ENTITY/i', $svg_markup)) {
@@ -55,9 +73,52 @@ class Icon_Sanitizer {
             return $this->error('root element must be <svg>.');
         }
 
+        $resource_error = $this->validate_resource_limits($root);
+        if ($resource_error !== null) {
+            return $this->error($resource_error);
+        }
+
         $this->clean_node($root);
 
         return $doc->saveXML($root);
+    }
+
+    /**
+     * Validate tree complexity iteratively before the recursive sanitizer walk.
+     *
+     * The stack stores each element with its depth, avoiding recursion while we
+     * decide whether recursion is safe. Attribute limits cover very large path
+     * and transform strings even when the overall file stays below 1 MB.
+     */
+    private function validate_resource_limits(\DOMElement $root) {
+        $stack = array(array($root, 1));
+        $element_count = 0;
+
+        while (!empty($stack)) {
+            list($element, $depth) = array_pop($stack);
+            $element_count++;
+
+            if ($element_count > self::MAX_ELEMENT_COUNT) {
+                return 'SVG contains too many elements.';
+            }
+            if ($depth > self::MAX_NESTING_DEPTH) {
+                return 'SVG nesting is too deep.';
+            }
+
+            foreach ($element->attributes as $attribute) {
+                if (strlen($attribute->value) > self::MAX_ATTRIBUTE_BYTES) {
+                    return 'SVG contains an attribute that is too large.';
+                }
+            }
+
+            foreach ($element->childNodes as $child) {
+                if ($child->nodeType === XML_ELEMENT_NODE) {
+                    $stack[] = array($child, $depth + 1);
+                }
+            }
+        }
+
+        return null;
     }
 
     private function clean_node(\DOMElement $node) {

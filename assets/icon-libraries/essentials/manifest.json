@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "cifd-essentials",
+  "name": "Essentials",
+  "version": "1.0.0",
+  "license": "GPL-2.0-or-later",
+  "icons": [
+    { "uuid": "c1fd0001-0000-4000-8000-000000000001", "slug": "arrow-up", "name": "Arrow Up", "category": "Navigation", "keywords": ["up", "north", "previous"], "file": "icons/arrow-up.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000002", "slug": "arrow-down", "name": "Arrow Down", "category": "Navigation", "keywords": ["down", "south", "next"], "file": "icons/arrow-down.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000003", "slug": "arrow-left", "name": "Arrow Left", "category": "Navigation", "keywords": ["back", "previous", "west"], "file": "icons/arrow-left.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000004", "slug": "arrow-right", "name": "Arrow Right", "category": "Navigation", "keywords": ["forward", "next", "east"], "file": "icons/arrow-right.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000005", "slug": "check", "name": "Check", "category": "Actions", "keywords": ["done", "complete", "success", "yes"], "file": "icons/check.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000006", "slug": "close", "name": "Close", "category": "Actions", "keywords": ["remove", "cancel", "dismiss", "x"], "file": "icons/close.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000007", "slug": "plus", "name": "Plus", "category": "Actions", "keywords": ["add", "create", "new"], "file": "icons/plus.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000008", "slug": "minus", "name": "Minus", "category": "Actions", "keywords": ["subtract", "remove", "collapse"], "file": "icons/minus.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000009", "slug": "menu", "name": "Menu", "category": "Interface", "keywords": ["navigation", "hamburger", "list"], "file": "icons/menu.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000010", "slug": "search", "name": "Search", "category": "Interface", "keywords": ["find", "magnify", "lookup"], "file": "icons/search.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000011", "slug": "home", "name": "Home", "category": "Places", "keywords": ["house", "homepage", "building"], "file": "icons/home.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000012", "slug": "email", "name": "Email", "category": "Contact", "keywords": ["mail", "message", "envelope"], "file": "icons/email.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000013", "slug": "phone", "name": "Phone", "category": "Contact", "keywords": ["call", "telephone", "contact"], "file": "icons/phone.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000014", "slug": "location", "name": "Location", "category": "Places", "keywords": ["map", "pin", "address"], "file": "icons/location.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000015", "slug": "user", "name": "User", "category": "People", "keywords": ["person", "profile", "account"], "file": "icons/user.svg" },
+    { "uuid": "c1fd0001-0000-4000-8000-000000000016", "slug": "star", "name": "Star", "category": "Status", "keywords": ["favorite", "rating", "featured"], "file": "icons/star.svg" }
+  ]
+}

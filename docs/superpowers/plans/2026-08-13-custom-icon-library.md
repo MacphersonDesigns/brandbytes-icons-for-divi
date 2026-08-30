@@ -1,5 +1,11 @@
 # Custom Icons for Divi Implementation Plan
 
+> **Status: Superseded historical plan. Do not continue these tasks as written.**
+> The current direction is documented in the
+> [August 30 Divi 5 integration audit](../../audits/2026-08-30-divi-5-custom-icon-integration-audit.md)
+> and [architecture decisions](../../decisions.md). This plan is retained as a
+> record of the prototype's construction.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship a WordPress plugin that lets a site owner upload custom icons through a real Media-Library-backed admin screen and use them inside Divi 5's native icon picker for the Icon module, Blurb, Button, Toggle, and Icon List.

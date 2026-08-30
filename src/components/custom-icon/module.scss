@@ -1,0 +1,43 @@
+// Shared by the Visual Builder and the published front end.
+.cifd_custom_icon {
+  height: auto;
+  text-align: center;
+
+  // Divi rows and columns are flex containers. Without this native Icon rule,
+  // the default cross-axis stretch makes a one-glyph module claim the entire
+  // column width. Center alignment shrink-wraps the root; the alignment style
+  // then uses Divi's auto margins to move that compact box left or right.
+  &.et_flex_module {
+    align-self: center;
+  }
+
+  .et_pb_icon_wrap {
+    display: inline-block;
+
+    // Keep the artwork's inline box tight without changing typography on the
+    // module root. Divi mounts its module-level insertion controls against the
+    // root wrapper; inheriting a zero line-height there can collapse the dark
+    // "add module" affordance while the neighboring row control still works.
+    line-height: 0;
+  }
+
+  .cifd-custom-icon__glyph {
+    background-color: currentColor;
+    display: inline-block;
+    height: 1em;
+    mask-image: var(--cifd-icon-url);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    vertical-align: middle;
+    width: 1em;
+    -webkit-mask-image: var(--cifd-icon-url);
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+  }
+
+  .cifd-custom-icon__glyph--is-missing {
+    display: none;
+  }
+}

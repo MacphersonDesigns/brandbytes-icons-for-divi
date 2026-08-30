@@ -1,7 +1,14 @@
 # Custom Icons for Divi — Design Spec
 
 Date: 2026-08-13
-Status: Approved for implementation planning
+Status: Superseded historical prototype specification
+
+> **Do not implement this document as the current contract.** The live Divi
+> 5.6.2 audit found that its filter timing, rendered-HTML discovery, and raw SVG
+> assumptions do not work safely end to end. Use
+> [`docs/audits/2026-08-30-divi-5-custom-icon-integration-audit.md`](../../audits/2026-08-30-divi-5-custom-icon-integration-audit.md)
+> and [`docs/decisions.md`](../../decisions.md) as the current direction. This
+> file is retained to explain the original prototype.
 
 ## Summary
 

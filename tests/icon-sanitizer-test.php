@@ -67,5 +67,31 @@ assert_true(strpos($result, '<linearGradient') !== false, 'mixed-case <linearGra
 assert_true(strpos($result, 'viewBox=') !== false, 'mixed-case viewBox attribute on the root <svg> survives sanitization with its case intact');
 assert_true(strpos($result, '<stop') !== false, "the gradient's <stop> child element survives sanitization");
 
+$oversized = '<svg xmlns="http://www.w3.org/2000/svg"><desc>'
+    . str_repeat('a', Icon_Sanitizer::MAX_FILE_BYTES)
+    . '</desc></svg>';
+$result = $sanitizer->sanitize($oversized);
+assert_true(is_object($result), 'an SVG larger than the explicit byte limit is rejected');
+
+$too_many_nodes = '<svg xmlns="http://www.w3.org/2000/svg">'
+    . str_repeat('<circle cx="1" cy="1" r="1"/>', Icon_Sanitizer::MAX_ELEMENT_COUNT + 1)
+    . '</svg>';
+$result = $sanitizer->sanitize($too_many_nodes);
+assert_true(is_object($result), 'an SVG exceeding the element-count limit is rejected');
+
+$too_deep = '<svg xmlns="http://www.w3.org/2000/svg">'
+    . str_repeat('<g>', Icon_Sanitizer::MAX_NESTING_DEPTH + 1)
+    . '<path d="M0 0h1v1z"/>'
+    . str_repeat('</g>', Icon_Sanitizer::MAX_NESTING_DEPTH + 1)
+    . '</svg>';
+$result = $sanitizer->sanitize($too_deep);
+assert_true(is_object($result), 'an SVG exceeding the nesting-depth limit is rejected');
+
+$oversized_path = '<svg xmlns="http://www.w3.org/2000/svg"><path d="'
+    . str_repeat('M0 0 ', Icon_Sanitizer::MAX_ATTRIBUTE_BYTES)
+    . '"/></svg>';
+$result = $sanitizer->sanitize($oversized_path);
+assert_true(is_object($result), 'an SVG with an oversized path attribute is rejected');
+
 echo "\n$passed passed, $failures failed\n";
 exit($failures > 0 ? 1 : 0);

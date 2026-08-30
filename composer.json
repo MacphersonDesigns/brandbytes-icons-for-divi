@@ -1,6 +1,6 @@
 {
-    "name": "macphersondesigns/custom-icons-for-divi",
-    "description": "Upload custom icons and use them in Divi 5's Icon module, Blurb, Button, Toggle, and Icon List.",
+    "name": "code-and-canvas/brandbytes-icons-for-divi",
+    "description": "Reusable icon libraries and a dedicated, native-feeling Custom Icon module for Divi 5.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {
@@ -12,7 +12,11 @@
     "scripts": {
         "test": [
             "@php tests/icon-registry-test.php",
-            "@php tests/icon-sanitizer-test.php"
+            "@php tests/bundled-icon-catalog-test.php",
+            "@php tests/icon-sanitizer-test.php",
+            "@php tests/icon-upload-policy-test.php",
+            "@php tests/icon-renderer-test.php",
+            "@php tests/custom-icon-asset-resolver-test.php"
         ]
     }
 }

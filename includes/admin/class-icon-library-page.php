@@ -28,21 +28,6 @@ class Icon_Library_Page {
         add_action('wp_ajax_cifd_rename_icon', array($this, 'ajax_rename_icon'));
         add_action('wp_ajax_cifd_delete_icon', array($this, 'ajax_delete_icon'));
         add_action('wp_ajax_cifd_reorder_icons', array($this, 'ajax_reorder_icons'));
-        add_filter('upload_mimes', array($this, 'allow_svg_uploads'));
-    }
-
-    /**
-     * WordPress rejects image/svg+xml uploads by default. This plugin's
-     * primary supported icon format is SVG, and Icon_Sanitizer strips any
-     * dangerous content from the uploaded file before it's ever used, so
-     * allowing the raw upload through WordPress's mime gate here is safe.
-     * Gated to the same capability as the rest of this plugin's write surface.
-     */
-    public function allow_svg_uploads($mimes) {
-        if (current_user_can(self::CAPABILITY)) {
-            $mimes['svg'] = 'image/svg+xml';
-        }
-        return $mimes;
     }
 
     public function register_page() {
@@ -139,7 +124,7 @@ class Icon_Library_Page {
             }
         }
 
-        $id = $this->registry->add($name, $url, $mime);
+        $id = $this->registry->add($name, $url, $mime, $attachment_id);
 
         wp_send_json_success(array('icon' => $this->registry->find($id)));
     }

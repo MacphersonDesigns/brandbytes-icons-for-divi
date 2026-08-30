@@ -1,0 +1,40 @@
+{
+  "module": {
+    "meta": {
+      "adminLabel": {
+        "desktop": {
+          "value": "Custom Icon"
+        }
+      }
+    }
+  },
+  "iconReference": {
+    "innerContent": {
+      "desktop": {
+        "value": {
+          "uuid": "c1fd0001-0000-4000-8000-000000000011",
+          "target": "off"
+        }
+      }
+    }
+  },
+  "icon": {
+    "advanced": {
+      "color": {
+        "desktop": {
+          "value": "$variable({\"type\":\"color\",\"value\":{\"name\":\"gcid-primary-color\",\"settings\":{}}})$"
+        }
+      },
+      "size": {
+        "desktop": {
+          "value": "96px"
+        }
+      },
+      "align": {
+        "desktop": {
+          "value": "center"
+        }
+      }
+    }
+  }
+}
