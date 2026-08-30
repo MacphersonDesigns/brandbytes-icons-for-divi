@@ -1,7 +1,64 @@
 # Native Divi icon-picker bridge
 
-Status: Archived compatibility research; inactive in 0.3.0  
+Status: Active as of the 2026-08-30 Phase 0 spike (see below). Superseded the
+"Archived" status this document previously carried under 0.3.0.
 First fixture: About page, default Blurb module, `Image & Icon` settings group
+
+## Phase 0 spike result (2026-08-30, Divi 5.11.1): interception mechanism found
+
+Live-verified in the actual Divi 5.11.1 Visual Builder on the About-page Blurb
+fixture (not just read from source): Divi's field-library resolves every
+field's rendered component through a filterable pipeline —
+
+```js
+mN = applyFilters("divi.fieldLibrary.fieldComponentMap", hN)   // base map, one-time
+getFieldComponent = (fieldName) => {
+  const resolved = (fieldName in mN) ? mN[fieldName].component : fallback;
+  return applyFilters("divi.fieldLibrary.getFieldComponent", resolved, fieldName);
+};
+```
+
+`window.vendor.wp.hooks` (Divi's own vendored copy of `@wordpress/hooks`,
+registered under the script handle `divi-vendor-wp-hooks`, distinct from
+WordPress core's `wp-hooks`) is exposed as a real global inside the Builder's
+`et-vb-app-frame` iframe. A plugin script running in that same frame can call:
+
+```js
+window.vendor.wp.hooks.addFilter(
+  'divi.fieldLibrary.getFieldComponent',
+  'custom-icons-for-divi/native-bridge',
+  (Component, fieldName) => fieldName !== 'divi/icon-picker'
+    ? Component
+    : WrapWithCustomIconsTab(Component)
+);
+```
+
+This was proven live, not just in source: registering this filter from outside
+Divi's own bundle (via the DevTools console, simulating a plugin script) and
+then opening Blurb's Content → Image & Icon panel caused our wrapper component
+to actually render in place of the native picker — confirmed visually (a
+marker rendered inside the real sidebar, screenshotted) and via a hit-counter
+proving the filter fires exactly when the `divi/icon-picker` field mounts,
+with the original native picker component passed through as an argument
+(matching the `NativePicker` prop shape `native-icon-picker-bridge.tsx`
+already assumed).
+
+Two important implications:
+
+1. **No race condition to lose.** `getFieldComponent` is a live filter call,
+   not a one-time-at-bundle-eval registration like `fieldComponentMap`. Our
+   `addFilter` call just needs to have executed before the user opens that
+   field in the sidebar — which is well after any script-loading race with
+   `field-library.js`'s own evaluation.
+2. **We get the original component for free.** Because our filter receives
+   the already-resolved native component as its first argument, wrapping it
+   (rendering it inside our own component alongside a "Custom Icons" tab) is
+   direct composition, not reconstruction from scratch.
+
+Per-module note: this specific field name (`divi/icon-picker`) is Blurb's.
+Icon, Icon List Item, Button, and Toggle need their own field name(s)
+confirmed the same way (read from the module's own `module.json`, field
+`component.name`) before repeating this pattern — not assumed to be identical.
 
 ## Outcome
 

@@ -1,5 +1,46 @@
 # Architecture decisions
 
+## 2026-08-30 — Intercept Divi's field-library component resolution via `divi.fieldLibrary.getFieldComponent`
+
+**Status:** Accepted after a live Phase 0 spike against the installed Divi
+5.11.1 Visual Builder.
+
+### Context
+
+The native icon-picker bridge (see
+`docs/features/native-icon-picker-bridge.md` and the
+2026-08-30 design spec) depends entirely on finding a stable way to intercept
+Divi's rendered icon-picker field component. This was an explicitly unproven
+assumption carried over from 5.6.2-era research; the plan's Phase 0 required
+either a proven mechanism or an explicit "none found" report before any
+further work proceeded.
+
+### Decision
+
+Use `window.vendor.wp.hooks.addFilter('divi.fieldLibrary.getFieldComponent', namespace, (component, fieldName) => ...)`,
+registered from the plugin's own Builder-enqueued script running inside the
+`et-vb-app-frame` iframe. This was proven live: the filter fires exactly when
+a field of the target name mounts, receives the original native component as
+an argument, and a replacement component returned from the filter actually
+renders in the real sidebar (verified visually, not just via console log).
+
+### Why this approach
+
+It requires no modification to any Divi file, uses the same
+`@wordpress/hooks` filter pattern already used for the icon-library catalog
+hooks the 5.6.2 research relied on, and composes with the original component
+directly rather than requiring a DOM-patching or re-implementation approach.
+`window.vendor.wp.hooks` is Divi's own vendored, page-global copy of the
+hooks library (distinct from WordPress core's `wp-hooks`) — the plugin's
+Builder script must reference this specific global, not `window.wp.hooks`.
+
+### Scope note
+
+Confirmed only for Blurb's `divi/icon-picker` field name in this spike. Each
+subsequent module (Icon, Icon List Item, Button, Toggle) must have its own
+field component name confirmed from its `module.json` before assuming this
+same interception point applies unchanged.
+
 ## 2026-08-30 — Explicitly compose Advanced settings for the extension
 
 **Status:** Accepted after live Builder regression evidence.
