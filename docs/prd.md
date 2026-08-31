@@ -47,13 +47,18 @@ rendering contract.
 - Multiple named icon libraries with stable UUIDs and site-local activation.
 - A bundled starter library that provides useful icons immediately without
   creating WordPress Media Library records.
+- Admin-uploaded icons should carry the same Media Library visibility
+  guarantee as the bundled library rather than appearing as ordinary
+  attachments (tracked in the feature registry as "Uploaded icon Media
+  Library visibility").
 - A Divi-style visual icon picker with thumbnail grid, search, named-library
   filters, selected state, icon names, and complete keyboard operation.
 - Individual SVG upload, multiple-SVG upload, and validated ZIP-based SVG-set
   import with an optional metadata manifest.
 - WordPress attachment relationships rather than stored absolute URLs.
 - Monochrome CSS-mask rendering with `currentColor` by default.
-- Explicit original-color mode for multicolor SVG/raster assets.
+- Explicit original-color mode for multicolor SVG/raster assets (scoped here;
+  not yet a tracked, implemented render-mode control — see feature registry).
 - Searchable names and keywords.
 - Accessible add, rename, delete, reorder, error, and progress behavior.
 - Versioned schema migrations and deletion tombstones.

@@ -30,6 +30,8 @@ Status values:
 | Individual SVG upload | Planned replacement | Move sanitization before publication; the new attachment relationship is ready, but current ingestion remains unsafe. |
 | Multiple-SVG upload | Planned | Queue with progress, duplicate detection, and per-file results. |
 | SVG-set ZIP import | Planned | Generic SVG archive plus optional manifest; enforce path, type, count, and expanded-size limits. |
+| Original-color / multicolor SVG rendering mode | Planned | PRD scopes an explicit original-color mode alongside the default `currentColor` mask, but no render-mode control or per-icon color metadata exists yet. |
+| Uploaded icon Media Library visibility | Planned | Admin-uploaded icons currently create ordinary Media Library attachments, unlike the Essentials bundled library; ties into the SVG sanitization security blocker above. |
 | Native Icon adapter | Planned | First compatibility proof on About page. |
 | Blurb adapter | Archived and inactive | Proof-of-concept source remains documented, but no Blurb hooks or render adapters load in 0.4.0. |
 | Button adapter | Planned | Parse button decoration icon values and preserve link text semantics. |
